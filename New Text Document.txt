@@ -1,0 +1,116 @@
+'***************************************************
+'PA 1 Coin Problem
+'Name: Carl Berger
+'Help recieved: Winston helped me with some math logic in order to get the ounces to roll over into pounds after hitting 16 ounces.
+'Self-Assessment: Not sure because i used totalPounds as a static; i think the point was to somehow get the total pounds from the static Ounces by just using division.
+'sort of like how the ounces change into pounds after hitting 16.
+'***************************************************
+Option Strict On
+Public Class frmPA2Shipping
+    Private Const SHIPPING_RATE As Decimal = 0.12D
+
+    Private Sub frmPA2Shipping_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        txtID.Text = "AWB01"                       'start the label
+    End Sub
+
+    Private Sub addToList(ByVal id As String,
+                          ByVal pounds As Integer,
+                          ByVal ounces As Integer,
+                          ByVal cost As Decimal)
+        Dim strld As String
+        Static count As Integer
+
+        count += 1                               'used in incrememnting the label with the label ID
+        txtID.Text = id & count.ToString("d2")
+        strld = id & count.ToString("D2") & " " & pounds & "lbs. " & ounces & "oz. " & cost.ToString("c")
+        lstOrders.Items.Add(strld)  'add all to listbox
+
+    End Sub
+
+    Private Function totals(ByVal totalpounds As Integer,
+                            ByVal totalounces As Integer,
+                            ByVal totalcost As Decimal) As Decimal
+
+        lblWeight.Text = totalpounds & "lbs. " & totalounces.ToString & "oz."
+        lblCost2.Text = totalcost.ToString("c")
+
+        Return totals                                           'just practicing
+
+    End Function
+
+    Private Sub btnCalc_Click(sender As Object, e As EventArgs) Handles btnCalc.Click
+        Static totalCost As Decimal
+        Static totalPounds, totalOunces As Integer              'could not figure out how to use one static with figuring pounds from totalOunces
+        Dim pounds, ounces As Integer
+        Dim cost As Decimal
+        Dim id As String = "AWB"
+
+        Try                                                     'try catch with interger.parse instead of .tryparse
+
+            If txtPounds.Text = "" And txtOunces.Text = "" Then 'long tedious method for some error checking
+                txtPounds.Focus()
+                MsgBox("enter at least 1 0z.")
+                Exit Sub
+
+            ElseIf txtPounds.Text = "" And txtOunces.Text <> "" Then
+                ounces = Integer.Parse(txtOunces.Text)
+            
+            ElseIf txtPounds.Text <> "" And txtOunces.Text = "" Then
+                pounds = Integer.Parse(txtPounds.Text)
+              
+            Else
+                pounds = Integer.Parse(txtPounds.Text)
+                ounces = Integer.Parse(txtOunces.Text)
+            End If
+
+            '                                                  this error checking needs to come after the parsed inputs
+            If pounds + ounces <= 0 Or txtPounds.Text = "" And ounces = 0 Or txtOunces.Text = "" And pounds = 0 Then
+                txtOunces.Focus()
+                MsgBox("enter at least 1 0z.")
+                Exit Sub
+            Else
+                cost = (pounds * 16 * SHIPPING_RATE) + (ounces * SHIPPING_RATE) 'getting total cost
+                txtCost.Text = cost.ToString
+                totalCost += cost                              'incrementing total cost
+
+                totalOunces += pounds * 16 + ounces            'getting total ounces from pounds and ounces
+                totalPounds += totalOunces \ 16                'dividing total ounces to get total pounds *this allows for the ounces to roll over into pounds*
+                totalOunces = totalOunces Mod 16               'figuring the ounces left over *this also aides in the rollover* without this after ounces hit 16, 
+                '                                               they keep increasing and adding to pounds on each increment
+
+            End If
+        Catch ex As Exception                                   'fancier error message window
+            MessageBox.Show(text:="ERROR",
+            caption:="Invalid input",
+            buttons:=MessageBoxButtons.OK,
+            icon:=MessageBoxIcon.Error)
+
+        End Try
+
+        addToList(id, pounds, ounces, cost)                    'variables for addtolist sub to use in the listbox listing
+        totals(totalPounds, totalOunces, totalCost)            'variables for the totals function to list in the lblWeight and lblCost2
+        txtPounds.Focus()
+        txtPounds.SelectAll()
+    End Sub
+    Private Sub btnclear_click(sender As Object, e As EventArgs) Handles btnClear.Click
+        txtOunces.Clear()
+        txtPounds.Clear()
+        txtCost.Clear()
+        txtPounds.Focus()
+    End Sub
+    Private Sub txtPounds_txtounces_TextChanged(sender As Object, e As EventArgs) Handles txtPounds.TextChanged, txtOunces.TextChanged
+        txtCost.Clear()                                       'i like how multiple events can handle a task
+    End Sub
+    Private Sub txtpounds_txtounces_gotfocus(sender As Object, e As EventArgs) Handles txtPounds.GotFocus, txtOunces.GotFocus
+        txtPounds.SelectAll()
+        txtOunces.SelectAll()
+    End Sub
+    Private Sub txtPounds_txtounces_click(sender As Object, e As EventArgs) Handles txtPounds.Click, txtOunces.Click
+        txtCost.Clear()
+        txtPounds.SelectAll()
+        txtOunces.SelectAll()
+    End Sub
+    Private Sub btnexit_click(sender As Object, e As EventArgs) Handles btnExit.Click
+        Me.Close()
+    End Sub
+End Class
